@@ -104,16 +104,16 @@ final class TDManager: ObservableObject {
 
     // MARK: - Public auth methods
 
-    func sendPhone(_ phone: String) async throws {
-        try await client.setAuthenticationPhoneNumber(phoneNumber: phone, settings: nil)
+    func sendPhone(_ phone: String) {
+        Task { _ = try? await client.setAuthenticationPhoneNumber(phoneNumber: phone, settings: nil) }
     }
 
-    func sendCode(_ code: String) async throws {
-        try await client.checkAuthenticationCode(code: code)
+    func sendCode(_ code: String) {
+        Task { _ = try? await client.checkAuthenticationCode(code: code) }
     }
 
-    func sendPassword(_ password: String) async throws {
-        try await client.checkAuthenticationPassword(password: password)
+    func sendPassword(_ password: String) {
+        Task { _ = try? await client.checkAuthenticationPassword(password: password) }
     }
 
     func logOut() {

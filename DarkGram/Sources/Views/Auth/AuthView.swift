@@ -15,7 +15,6 @@ struct AuthView: View {
             theme.colors.bg.ignoresSafeArea()
 
             VStack(spacing: 32) {
-                // Logo
                 VStack(spacing: 8) {
                     Image(systemName: "moon.stars.fill")
                         .font(.system(size: 56))
@@ -52,6 +51,9 @@ struct AuthView: View {
                 Spacer()
             }
         }
+        .onChange(of: tdManager.authState) { _ in
+            isLoading = false
+        }
     }
 
     // MARK: - Steps
@@ -65,7 +67,9 @@ struct AuthView: View {
             DarkTextField(placeholder: "+7 000 000 00 00", text: $phone, keyboardType: .phonePad)
 
             DarkButton(title: "Далее", isLoading: isLoading) {
-                submit { try await tdManager.sendPhone(phone) }
+                errorMsg = nil
+                isLoading = true
+                tdManager.sendPhone(phone)
             }
         }
     }
@@ -79,7 +83,9 @@ struct AuthView: View {
             DarkTextField(placeholder: "12345", text: $code, keyboardType: .numberPad)
 
             DarkButton(title: "Подтвердить", isLoading: isLoading) {
-                submit { try await tdManager.sendCode(code) }
+                errorMsg = nil
+                isLoading = true
+                tdManager.sendCode(code)
             }
         }
     }
@@ -93,30 +99,14 @@ struct AuthView: View {
             DarkTextField(placeholder: "Пароль", text: $password, isSecure: true)
 
             DarkButton(title: "Войти", isLoading: isLoading) {
-                submit { try await tdManager.sendPassword(password) }
+                errorMsg = nil
+                isLoading = true
+                tdManager.sendPassword(password)
             }
         }
     }
 
-    // MARK: - Helper
-
-    private func submit(_ action: @escaping () async throws -> Void) {
-        errorMsg = nil
-        isLoading = true
-        Task {
-            do {
-                try await action()
-            } catch {
-                await MainActor.run {
-                    errorMsg = error.localizedDescription
-                }
-            }
-            await MainActor.run { isLoading = false }
-        }
-    }
-}
-
-// MARK: - Reusable components
+    // MARK: - Reusable components
 
 struct DarkTextField: View {
     @EnvironmentObject var theme: ThemeManager
