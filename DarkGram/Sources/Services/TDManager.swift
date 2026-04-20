@@ -18,17 +18,13 @@ final class TDManager: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     private init() {
-        var apiRef: TdApi?
-        let client = manager.createClient(updateHandler: { [weak manager] data, _ in
-            guard let api = apiRef else { return }
-            if let update = try? api.decoder.decode(Update.self, from: data) {
-                Task { @MainActor in
-                    TDManager.shared.handle(update: update)
-                }
+        let tdClient = manager.createClient(updateHandler: { data, _ in
+            guard let update = try? JSONDecoder().decode(Update.self, from: data) else { return }
+            Task { @MainActor in
+                TDManager.shared.handle(update: update)
             }
         })
-        api = TdApi(client: client)
-        apiRef = api
+        api = TdApi(client: tdClient as! TdClient)
         configure()
     }
 
@@ -189,7 +185,7 @@ final class TDManager: ObservableObject {
         var replyTo: InputMessageReplyTo? = nil
         if let rid = replyToId {
             replyTo = .inputMessageReplyToMessage(
-                InputMessageReplyToMessage(messageId: rid, quote: nil)
+                InputMessageReplyToMessage(checklistTaskId: 0, messageId: rid, quote: nil)
             )
         }
         _ = try await api.sendMessage(
