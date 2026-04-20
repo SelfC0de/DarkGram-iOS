@@ -3,13 +3,15 @@
 <plist version="1.0">
 <dict>
     <key>method</key>
-    <string>release-testing</string>
+    <string>development</string>
     <key>teamID</key>
     <string>SELFCODE11</string>
     <key>compileBitcode</key>
     <false/>
     <key>signingStyle</key>
     <string>manual</string>
+    <key>signingCertificate</key>
+    <string>-</string>
     <key>stripSwiftSymbols</key>
     <true/>
     <key>thinning</key>
