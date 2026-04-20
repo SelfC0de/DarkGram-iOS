@@ -13,18 +13,19 @@ final class TDManager: ObservableObject {
     @Published var authState: AuthState = .idle
     @Published var chats: [Chat] = []
 
-    private let api: TdApi
+    private var api: TdApi!
     private let manager = TDLibClientManager()
     private var cancellables = Set<AnyCancellable>()
 
     private init() {
-        let tdClient = manager.createClient(updateHandler: { data, _ in
-            guard let update = try? JSONDecoder().decode(Update.self, from: data) else { return }
+        var tdClient: TDLibClient!
+        tdClient = manager.createClient(updateHandler: { data, _ in
+            guard let update = try? tdClient.decoder.decode(Update.self, from: data) else { return }
             Task { @MainActor in
                 TDManager.shared.handle(update: update)
             }
         })
-        api = TdApi(client: tdClient as! TdClient)
+        api = TdApi(client: tdClient)
         configure()
     }
 
