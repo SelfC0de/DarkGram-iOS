@@ -26,7 +26,6 @@ final class TDManager: ObservableObject {
                 }
             } catch {}
         })
-        configure()
     }
 
     // MARK: - Configure
@@ -120,6 +119,8 @@ final class TDManager: ObservableObject {
 
     private func handleAuth(state: AuthorizationState) {
         switch state {
+        case .authorizationStateWaitTdlibParameters:
+            configure()
         case .authorizationStateWaitPhoneNumber:
             DispatchQueue.main.async { self.authState = .waitPhoneNumber }
         case .authorizationStateWaitCode:
