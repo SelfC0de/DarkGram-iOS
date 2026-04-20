@@ -14,13 +14,22 @@ final class TDManager: ObservableObject {
     @Published var chats: [Chat] = []
 
     private let api: TdApi
+    private let manager = TDLibClientManager()
     private var cancellables = Set<AnyCancellable>()
 
     private init() {
-        let client = TDLibClientManager.shared.createClient()
+        var apiRef: TdApi?
+        let client = manager.createClient(updateHandler: { [weak manager] data, _ in
+            guard let api = apiRef else { return }
+            if let update = try? api.decoder.decode(Update.self, from: data) {
+                Task { @MainActor in
+                    TDManager.shared.handle(update: update)
+                }
+            }
+        })
         api = TdApi(client: client)
+        apiRef = api
         configure()
-        startUpdateLoop()
     }
 
     // MARK: - Configure
@@ -47,15 +56,6 @@ final class TDManager: ObservableObject {
     }
 
     // MARK: - Update loop
-
-    private func startUpdateLoop() {
-        Task.detached(priority: .background) { [weak self] in
-            guard let self else { return }
-            for await update in self.api.updates {
-                await self.handle(update: update)
-            }
-        }
-    }
 
     @MainActor
     private func handle(update: Update) {
@@ -189,7 +189,7 @@ final class TDManager: ObservableObject {
         var replyTo: InputMessageReplyTo? = nil
         if let rid = replyToId {
             replyTo = .inputMessageReplyToMessage(
-                InputMessageReplyToMessage(checklistTaskId: nil, messageId: Int(rid), quote: nil)
+                InputMessageReplyToMessage(messageId: rid, quote: nil)
             )
         }
         _ = try await api.sendMessage(
