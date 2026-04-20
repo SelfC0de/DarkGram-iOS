@@ -266,10 +266,10 @@
 /* Begin XCRemoteSwiftPackageReference section */
 		EE000003000000000000000A = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/nicegram/TDLibKit.git";
+			repositoryURL = "https://github.com/Swiftgram/TDLibKit.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.8.17;
+				kind = exactVersion;
+				version = "1.5.2-tdlib-1.8.58-889bdf06";
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
