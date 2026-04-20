@@ -22,6 +22,7 @@
 		CC000012000000000000000A = {isa = PBXBuildFile; fileRef = BB000012000000000000000A; };
 		CC000013000000000000000A = {isa = PBXBuildFile; fileRef = BB000013000000000000000A; };
 		AA000012000000000000000A = {isa = PBXBuildFile; fileRef = AA000010000000000000000A; };
+		EE000001000000000000000A = {isa = PBXBuildFile; productRef = EE000002000000000000000A; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,6 +50,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EE000001000000000000000A,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -184,6 +186,7 @@
 			);
 			name = DarkGram;
 			packageProductDependencies = (
+				EE000002000000000000000A,
 			);
 			productName = DarkGram;
 			productReference = AA00000E000000000000000A;
@@ -214,6 +217,7 @@
 			);
 			mainGroup = AA00000C000000000000000A;
 			packageReferences = (
+				EE000003000000000000000A,
 			);
 			productRefGroup = AA00000D000000000000000A;
 			projectDirPath = "";
@@ -258,6 +262,25 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		EE000003000000000000000A = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/nicegram/TDLibKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.8.17;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		EE000002000000000000000A = {
+			isa = XCSwiftPackageProductDependency;
+			package = EE000003000000000000000A;
+			productName = TDLibKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCBuildConfiguration section */
 		AA000004000000000000000A = {

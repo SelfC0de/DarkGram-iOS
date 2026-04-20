@@ -26,16 +26,6 @@ jobs:
           sudo xcode-select -s "/Applications/$XCODE/Contents/Developer"
           xcodebuild -version
 
-      - name: Resolve SPM packages
-        run: |
-          cd DarkGram.xcodeproj
-          xcodebuild -resolvePackageDependencies \
-            -project ../DarkGram.xcodeproj \
-            -scheme DarkGram \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
-
       - name: Build IPA (unsigned)
         run: |
           xcodebuild archive \
