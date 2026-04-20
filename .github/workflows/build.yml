@@ -26,13 +26,13 @@ jobs:
           sudo xcode-select -s "/Applications/$XCODE/Contents/Developer"
           xcodebuild -version
 
-      - name: Build IPA (unsigned)
+      - name: Archive
         run: |
           xcodebuild archive \
             -project DarkGram.xcodeproj \
             -scheme DarkGram \
             -configuration Release \
-            -archivePath build/DarkGram.xcarchive \
+            -archivePath $RUNNER_TEMP/DarkGram.xcarchive \
             -destination "generic/platform=iOS" \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
@@ -40,50 +40,45 @@ jobs:
             PRODUCT_BUNDLE_IDENTIFIER=com.selfcode.darkgramplus \
             | xcpretty
 
-          xcodebuild -exportArchive \
-            -archivePath build/DarkGram.xcarchive \
-            -exportPath build/ipa \
-            -exportOptionsPlist ExportOptions.plist
-
-      - name: Copy icon into .app bundle
+      - name: Export IPA
         run: |
-          APP=$(find build/ipa -name "*.app" | head -1)
-          cp DarkGram/Assets.xcassets/AppIcon.appiconset/Icon-60@2x.png  "$APP/AppIcon60x60@2x.png"
-          cp DarkGram/Assets.xcassets/AppIcon.appiconset/Icon-60@3x.png  "$APP/AppIcon60x60@3x.png"
-          cp DarkGram/Assets.xcassets/AppIcon.appiconset/Icon-76@2x.png  "$APP/AppIcon76x76@2x.png"
-          cp DarkGram/Assets.xcassets/AppIcon.appiconset/Icon-83.5@2x.png "$APP/AppIcon83.5x83.5@2x.png"
-          cp DarkGram/Assets.xcassets/AppIcon.appiconset/Icon-1024@1x.png "$APP/AppIcon1024x1024@1x.png"
+          xcodebuild -exportArchive \
+            -archivePath $RUNNER_TEMP/DarkGram.xcarchive \
+            -exportPath $RUNNER_TEMP/ipa \
+            -exportOptionsPlist ExportOptions.plist
+          IPA=$(find $RUNNER_TEMP/ipa -name "*.ipa" | head -1)
+          echo "Found: $IPA"
+          cp "$IPA" $RUNNER_TEMP/DarkGram.ipa
 
+      - name: Inject icons into IPA
+        run: |
+          cd $RUNNER_TEMP
+          mkdir -p ipa_patch
+          unzip -q DarkGram.ipa -d ipa_patch
+          APP=$(find ipa_patch/Payload -name "*.app" | head -1)
+          cp $GITHUB_WORKSPACE/DarkGram/Assets.xcassets/AppIcon.appiconset/Icon-60@2x.png   "$APP/AppIcon60x60@2x.png"
+          cp $GITHUB_WORKSPACE/DarkGram/Assets.xcassets/AppIcon.appiconset/Icon-60@3x.png   "$APP/AppIcon60x60@3x.png"
+          cp $GITHUB_WORKSPACE/DarkGram/Assets.xcassets/AppIcon.appiconset/Icon-76@2x.png   "$APP/AppIcon76x76@2x.png"
+          cp $GITHUB_WORKSPACE/DarkGram/Assets.xcassets/AppIcon.appiconset/Icon-83.5@2x.png "$APP/AppIcon83.5x83.5@2x.png"
+          cp $GITHUB_WORKSPACE/DarkGram/Assets.xcassets/AppIcon.appiconset/Icon-1024@1x.png "$APP/AppIcon1024x1024@1x.png"
           /usr/libexec/PlistBuddy -c "Delete :CFBundleIcons" "$APP/Info.plist" 2>/dev/null || true
           /usr/libexec/PlistBuddy -c "Add :CFBundleIcons dict" "$APP/Info.plist"
           /usr/libexec/PlistBuddy -c "Add :CFBundleIcons:CFBundlePrimaryIcon dict" "$APP/Info.plist"
           /usr/libexec/PlistBuddy -c "Add :CFBundleIcons:CFBundlePrimaryIcon:CFBundleIconFiles array" "$APP/Info.plist"
           /usr/libexec/PlistBuddy -c "Add :CFBundleIcons:CFBundlePrimaryIcon:CFBundleIconFiles: string AppIcon60x60" "$APP/Info.plist"
           /usr/libexec/PlistBuddy -c "Add :CFBundleIcons:CFBundlePrimaryIcon:CFBundleIconFiles: string AppIcon76x76" "$APP/Info.plist"
-
-      - name: Package IPA
-        run: |
-          IPA=$(find build/ipa -name "*.ipa" | head -1)
-          # inject iTunesArtwork
-          cp DarkGram/Assets.xcassets/AppIcon.appiconset/Icon-1024@1x.png /tmp/iTunesArtwork
-          cd build/ipa
-          zip -r ../../DarkGram.ipa . 
-          cd ../..
-          # add iTunesArtwork to ipa root
-          zip DarkGram.ipa /tmp/iTunesArtwork
-
-      - name: Get version
-        id: version
-        run: echo "ver=${{ github.event.inputs.version || '1.0.0' }}" >> $GITHUB_OUTPUT
+          cp $GITHUB_WORKSPACE/DarkGram/Assets.xcassets/AppIcon.appiconset/Icon-1024@1x.png ipa_patch/iTunesArtwork
+          cd ipa_patch && zip -qr ../DarkGram-final.ipa . && cd ..
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version.outputs.ver }}
-          name: DarkGram+ v${{ steps.version.outputs.ver }}
-          files: DarkGram.ipa
+          tag_name: v${{ github.event.inputs.version || '1.0.0' }}
+          name: DarkGram+ v${{ github.event.inputs.version || '1.0.0' }}
+          prerelease: true
+          files: ${{ runner.temp }}/DarkGram-final.ipa
           body: |
-            ## DarkGram+ v${{ steps.version.outputs.ver }}
+            ## DarkGram+ v${{ github.event.inputs.version || '1.0.0' }}
             Установка через Sideloadly / AltStore
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
