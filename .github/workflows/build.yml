@@ -1,0 +1,95 @@
+name: Build DarkGram+
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g. 1.0.1)'
+        required: false
+        default: '1.0.0'
+
+jobs:
+  build:
+    runs-on: macos-14
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 16
+        run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
+
+      - name: Resolve SPM packages
+        run: |
+          cd DarkGram.xcodeproj
+          xcodebuild -resolvePackageDependencies \
+            -project ../DarkGram.xcodeproj \
+            -scheme DarkGram \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Build IPA (unsigned)
+        run: |
+          xcodebuild archive \
+            -project DarkGram.xcodeproj \
+            -scheme DarkGram \
+            -configuration Release \
+            -archivePath build/DarkGram.xcarchive \
+            -destination "generic/platform=iOS" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            PRODUCT_BUNDLE_IDENTIFIER=com.selfcode.darkgramplus \
+            | xcpretty
+
+          xcodebuild -exportArchive \
+            -archivePath build/DarkGram.xcarchive \
+            -exportPath build/ipa \
+            -exportOptionsPlist ExportOptions.plist
+
+      - name: Copy icon into .app bundle
+        run: |
+          APP=$(find build/ipa -name "*.app" | head -1)
+          cp DarkGram/Assets.xcassets/AppIcon.appiconset/Icon-60@2x.png  "$APP/AppIcon60x60@2x.png"
+          cp DarkGram/Assets.xcassets/AppIcon.appiconset/Icon-60@3x.png  "$APP/AppIcon60x60@3x.png"
+          cp DarkGram/Assets.xcassets/AppIcon.appiconset/Icon-76@2x.png  "$APP/AppIcon76x76@2x.png"
+          cp DarkGram/Assets.xcassets/AppIcon.appiconset/Icon-83.5@2x.png "$APP/AppIcon83.5x83.5@2x.png"
+          cp DarkGram/Assets.xcassets/AppIcon.appiconset/Icon-1024@1x.png "$APP/AppIcon1024x1024@1x.png"
+
+          /usr/libexec/PlistBuddy -c "Delete :CFBundleIcons" "$APP/Info.plist" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :CFBundleIcons dict" "$APP/Info.plist"
+          /usr/libexec/PlistBuddy -c "Add :CFBundleIcons:CFBundlePrimaryIcon dict" "$APP/Info.plist"
+          /usr/libexec/PlistBuddy -c "Add :CFBundleIcons:CFBundlePrimaryIcon:CFBundleIconFiles array" "$APP/Info.plist"
+          /usr/libexec/PlistBuddy -c "Add :CFBundleIcons:CFBundlePrimaryIcon:CFBundleIconFiles: string AppIcon60x60" "$APP/Info.plist"
+          /usr/libexec/PlistBuddy -c "Add :CFBundleIcons:CFBundlePrimaryIcon:CFBundleIconFiles: string AppIcon76x76" "$APP/Info.plist"
+
+      - name: Package IPA
+        run: |
+          IPA=$(find build/ipa -name "*.ipa" | head -1)
+          # inject iTunesArtwork
+          cp DarkGram/Assets.xcassets/AppIcon.appiconset/Icon-1024@1x.png /tmp/iTunesArtwork
+          cd build/ipa
+          zip -r ../../DarkGram.ipa . 
+          cd ../..
+          # add iTunesArtwork to ipa root
+          zip DarkGram.ipa /tmp/iTunesArtwork
+
+      - name: Get version
+        id: version
+        run: echo "ver=${{ github.event.inputs.version || '1.0.0' }}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.ver }}
+          name: DarkGram+ v${{ steps.version.outputs.ver }}
+          files: DarkGram.ipa
+          body: |
+            ## DarkGram+ v${{ steps.version.outputs.ver }}
+            Установка через Sideloadly / AltStore
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

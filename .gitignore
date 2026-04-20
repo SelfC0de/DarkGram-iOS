@@ -1,0 +1,8 @@
+.DS_Store
+build/
+*.xcarchive
+*.ipa
+DarkGram.xcodeproj/xcuserdata/
+DarkGram.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcworkspace/xcshareddata/swiftpm/
+.build/

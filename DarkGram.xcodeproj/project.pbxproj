@@ -1,0 +1,373 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		CC000000000000000000000A = {isa = PBXBuildFile; fileRef = BB000000000000000000000A; };
+		CC000001000000000000000A = {isa = PBXBuildFile; fileRef = BB000001000000000000000A; };
+		CC000002000000000000000A = {isa = PBXBuildFile; fileRef = BB000002000000000000000A; };
+		CC000003000000000000000A = {isa = PBXBuildFile; fileRef = BB000003000000000000000A; };
+		CC000004000000000000000A = {isa = PBXBuildFile; fileRef = BB000004000000000000000A; };
+		CC000005000000000000000A = {isa = PBXBuildFile; fileRef = BB000005000000000000000A; };
+		CC000006000000000000000A = {isa = PBXBuildFile; fileRef = BB000006000000000000000A; };
+		CC000007000000000000000A = {isa = PBXBuildFile; fileRef = BB000007000000000000000A; };
+		CC000008000000000000000A = {isa = PBXBuildFile; fileRef = BB000008000000000000000A; };
+		CC000009000000000000000A = {isa = PBXBuildFile; fileRef = BB000009000000000000000A; };
+		CC000010000000000000000A = {isa = PBXBuildFile; fileRef = BB000010000000000000000A; };
+		CC000011000000000000000A = {isa = PBXBuildFile; fileRef = BB000011000000000000000A; };
+		CC000012000000000000000A = {isa = PBXBuildFile; fileRef = BB000012000000000000000A; };
+		CC000013000000000000000A = {isa = PBXBuildFile; fileRef = BB000013000000000000000A; };
+		AA000012000000000000000A = {isa = PBXBuildFile; fileRef = AA000010000000000000000A; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		BB000000000000000000000A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DarkGramApp.swift"; sourceTree = "<group>"; };
+		BB000001000000000000000A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RootView.swift"; sourceTree = "<group>"; };
+		BB000002000000000000000A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TDLibConfig.generated.swift"; sourceTree = "<group>"; };
+		BB000003000000000000000A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TDManager.swift"; sourceTree = "<group>"; };
+		BB000004000000000000000A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ThemeManager.swift"; sourceTree = "<group>"; };
+		BB000005000000000000000A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TweakSettings.swift"; sourceTree = "<group>"; };
+		BB000006000000000000000A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AuthView.swift"; sourceTree = "<group>"; };
+		BB000007000000000000000A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChatView.swift"; sourceTree = "<group>"; };
+		BB000008000000000000000A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MessageBubbleView.swift"; sourceTree = "<group>"; };
+		BB000009000000000000000A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChatAvatarView.swift"; sourceTree = "<group>"; };
+		BB000010000000000000000A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChatListView.swift"; sourceTree = "<group>"; };
+		BB000011000000000000000A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChatRowView.swift"; sourceTree = "<group>"; };
+		BB000012000000000000000A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DarkSplashView.swift"; sourceTree = "<group>"; };
+		BB000013000000000000000A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView.swift"; sourceTree = "<group>"; };
+		AA00000E000000000000000A = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DarkGram.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA000010000000000000000A = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA000011000000000000000A = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AA00000B000000000000000A = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		DD000001000000000000000A = {
+			isa = PBXGroup;
+			children = (
+				BB000000000000000000000A,
+				BB000001000000000000000A,
+				BB000002000000000000000A,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		DD000002000000000000000A = {
+			isa = PBXGroup;
+			children = (
+				BB000003000000000000000A,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		DD000003000000000000000A = {
+			isa = PBXGroup;
+			children = (
+				BB000004000000000000000A,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		DD000004000000000000000A = {
+			isa = PBXGroup;
+			children = (
+				BB000005000000000000000A,
+			);
+			path = Tweaks;
+			sourceTree = "<group>";
+		};
+		DD000006000000000000000A = {
+			isa = PBXGroup;
+			children = (
+				BB000006000000000000000A,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		DD000007000000000000000A = {
+			isa = PBXGroup;
+			children = (
+				BB000007000000000000000A,
+				BB000008000000000000000A,
+			);
+			path = Chat;
+			sourceTree = "<group>";
+		};
+		DD000008000000000000000A = {
+			isa = PBXGroup;
+			children = (
+				BB000009000000000000000A,
+				BB000010000000000000000A,
+				BB000011000000000000000A,
+			);
+			path = ChatList;
+			sourceTree = "<group>";
+		};
+		DD000009000000000000000A = {
+			isa = PBXGroup;
+			children = (
+				BB000013000000000000000A,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		DD000005000000000000000A = {
+			isa = PBXGroup;
+			children = (
+				DD000006000000000000000A,
+				DD000007000000000000000A,
+				DD000008000000000000000A,
+				DD000009000000000000000A,
+				BB000012000000000000000A,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		AA00000F000000000000000A = {
+			isa = PBXGroup;
+			children = (
+				DD000001000000000000000A,
+				DD000002000000000000000A,
+				DD000003000000000000000A,
+				DD000004000000000000000A,
+				DD000005000000000000000A,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		AA00000C000000000000000A = {
+			isa = PBXGroup;
+			children = (
+				AA00000F000000000000000A,
+				AA000010000000000000000A,
+				AA000011000000000000000A,
+				AA00000D000000000000000A,
+			);
+			path = DarkGram;
+			sourceTree = "<group>";
+		};
+		AA00000D000000000000000A = {
+			isa = PBXGroup;
+			children = (
+				AA00000E000000000000000A,
+			);
+			name = "Products";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AA000002000000000000000A = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA000006000000000000000A;
+			buildPhases = (
+				AA000009000000000000000A,
+				AA00000B000000000000000A,
+				AA00000A000000000000000A,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DarkGram;
+			packageProductDependencies = (
+			);
+			productName = DarkGram;
+			productReference = AA00000E000000000000000A;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AA000001000000000000000A = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					AA000002000000000000000A = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = AA000003000000000000000A;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AA00000C000000000000000A;
+			packageReferences = (
+			);
+			productRefGroup = AA00000D000000000000000A;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AA000002000000000000000A,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AA00000A000000000000000A = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000012000000000000000A,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AA000009000000000000000A = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CC000000000000000000000A,
+				CC000001000000000000000A,
+				CC000002000000000000000A,
+				CC000003000000000000000A,
+				CC000004000000000000000A,
+				CC000005000000000000000A,
+				CC000006000000000000000A,
+				CC000007000000000000000A,
+				CC000008000000000000000A,
+				CC000009000000000000000A,
+				CC000010000000000000000A,
+				CC000011000000000000000A,
+				CC000012000000000000000A,
+				CC000013000000000000000A,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		AA000004000000000000000A = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		AA000005000000000000000A = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		AA000007000000000000000A = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSTCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSTCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Manual;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DarkGram/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LE_SWIFT_VERSION = 5.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.selfcode.darkgramplus;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AA000008000000000000000A = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSTCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSTCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Manual;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DarkGram/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LE_SWIFT_VERSION = 5.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.selfcode.darkgramplus;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AA000003000000000000000A = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA000004000000000000000A,
+				AA000005000000000000000A,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA000006000000000000000A = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA000007000000000000000A,
+				AA000008000000000000000A,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = AA000001000000000000000A;
+}
