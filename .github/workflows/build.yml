@@ -26,8 +26,13 @@ jobs:
           sudo xcode-select -s "/Applications/$XCODE/Contents/Developer"
           xcodebuild -version
 
+      - name: Show scheme info
+        run: |
+          xcodebuild -project DarkGram.xcodeproj -list
+
       - name: Archive
         run: |
+          set -o pipefail
           xcodebuild archive \
             -project DarkGram.xcodeproj \
             -scheme DarkGram \
@@ -38,16 +43,21 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             PRODUCT_BUNDLE_IDENTIFIER=com.selfcode.darkgramplus \
-            | xcpretty
+            2>&1 | tee /tmp/build.log
+          echo "Exit: $?"
+          ls -la $RUNNER_TEMP/ || true
 
       - name: Export IPA
         run: |
+          set -e
+          ls -la $RUNNER_TEMP/
           xcodebuild -exportArchive \
             -archivePath $RUNNER_TEMP/DarkGram.xcarchive \
             -exportPath $RUNNER_TEMP/ipa \
-            -exportOptionsPlist ExportOptions.plist
+            -exportOptionsPlist ExportOptions.plist \
+            2>&1
           IPA=$(find $RUNNER_TEMP/ipa -name "*.ipa" | head -1)
-          echo "Found: $IPA"
+          echo "IPA: $IPA"
           cp "$IPA" $RUNNER_TEMP/DarkGram.ipa
 
       - name: Inject icons into IPA
