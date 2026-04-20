@@ -4,12 +4,12 @@
 <dict>
     <key>method</key>
     <string>release-testing</string>
+    <key>teamID</key>
+    <string>SELFCODE11</string>
     <key>compileBitcode</key>
     <false/>
     <key>signingStyle</key>
     <string>manual</string>
-    <key>signingCertificate</key>
-    <string>-</string>
     <key>stripSwiftSymbols</key>
     <true/>
     <key>thinning</key>
