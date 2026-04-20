@@ -14,15 +14,15 @@ final class TDManager: ObservableObject {
     @Published var chats: [Chat] = []
 
     private var client: TDLibClient!
-    private let manager = TDLibClientManager()
-    private var cancellables = Set<AnyCancellable>()
+    private let manager: TDLibClientManager
 
     private init() {
-        client = manager.createClient(updateHandler: { [weak self] data, tdClient in
+        manager = TDLibClientManager()
+        client = manager.createClient(updateHandler: { data, tdClient in
             do {
                 let update = try tdClient.decoder.decode(Update.self, from: data)
-                Task { @MainActor [weak self] in
-                    self?.handle(update: update)
+                Task { @MainActor in
+                    TDManager.shared.handle(update: update)
                 }
             } catch {}
         })
@@ -31,27 +31,35 @@ final class TDManager: ObservableObject {
     // MARK: - Configure
 
     private func configure() {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let dbDir    = docs.appendingPathComponent("darkgram_db").path
+        let filesDir = docs.appendingPathComponent("darkgram_files").path
+
         Task {
-            _ = try? await client.setTdlibParameters(
-                apiHash: TELEGRAM_API_HASH,
-                apiId: Int(TELEGRAM_API_ID),
-                applicationVersion: "1.0",
-                databaseDirectory: dbPath(),
-                databaseEncryptionKey: nil,
-                deviceModel: UIDevice.current.model,
-                filesDirectory: filesPath(),
-                systemLanguageCode: Locale.current.language.languageCode?.identifier ?? "en",
-                systemVersion: UIDevice.current.systemVersion,
-                useChatInfoDatabase: true,
-                useFileDatabase: true,
-                useMessageDatabase: true,
-                useSecretChats: true,
-                useTestDc: false
-            )
+            do {
+                try await client.setTdlibParameters(
+                    apiHash: TELEGRAM_API_HASH,
+                    apiId: Int(TELEGRAM_API_ID),
+                    applicationVersion: "1.0",
+                    databaseDirectory: dbDir,
+                    databaseEncryptionKey: nil,
+                    deviceModel: UIDevice.current.model,
+                    filesDirectory: filesDir,
+                    systemLanguageCode: Locale.current.language.languageCode?.identifier ?? "en",
+                    systemVersion: UIDevice.current.systemVersion,
+                    useChatInfoDatabase: true,
+                    useFileDatabase: true,
+                    useMessageDatabase: true,
+                    useSecretChats: false,
+                    useTestDc: false
+                )
+            } catch {
+                print("[TDManager] setTdlibParameters error: \(error)")
+            }
         }
     }
 
-    // MARK: - Update loop
+    // MARK: - Updates
 
     @MainActor
     private func handle(update: Update) {
@@ -64,51 +72,7 @@ final class TDManager: ObservableObject {
             }
         case .updateChatLastMessage(let u):
             if let i = chats.firstIndex(where: { $0.id == u.chatId }) {
-                var chat = chats[i]
-                chats[i] = Chat(
-                    accentColorId: chat.accentColorId,
-                    actionBar: chat.actionBar,
-                    availableReactions: chat.availableReactions,
-                    background: chat.background,
-                    backgroundCustomEmojiId: chat.backgroundCustomEmojiId,
-                    blockList: chat.blockList,
-                    businessBotManageBar: chat.businessBotManageBar,
-                    canBeDeletedForAllUsers: chat.canBeDeletedForAllUsers,
-                    canBeDeletedOnlyForSelf: chat.canBeDeletedOnlyForSelf,
-                    canBeReported: chat.canBeReported,
-                    chatLists: chat.chatLists,
-                    clientData: chat.clientData,
-                    defaultDisableNotification: chat.defaultDisableNotification,
-                    draftMessage: chat.draftMessage,
-                    emojiStatus: chat.emojiStatus,
-                    hasProtectedContent: chat.hasProtectedContent,
-                    hasScheduledMessages: chat.hasScheduledMessages,
-                    id: chat.id,
-                    isMarkedAsUnread: chat.isMarkedAsUnread,
-                    isTranslatable: chat.isTranslatable,
-                    lastMessage: u.lastMessage,
-                    lastReadInboxMessageId: chat.lastReadInboxMessageId,
-                    lastReadOutboxMessageId: chat.lastReadOutboxMessageId,
-                    messageAutoDeleteTime: chat.messageAutoDeleteTime,
-                    messageSenderId: chat.messageSenderId,
-                    notificationSettings: chat.notificationSettings,
-                    pendingJoinRequests: chat.pendingJoinRequests,
-                    permissions: chat.permissions,
-                    photo: chat.photo,
-                    positions: u.positions,
-                    profileAccentColorId: chat.profileAccentColorId,
-                    profileBackgroundCustomEmojiId: chat.profileBackgroundCustomEmojiId,
-                    replyMarkupMessageId: chat.replyMarkupMessageId,
-                    theme: chat.theme,
-                    title: chat.title,
-                    type: chat.type,
-                    unreadCount: chat.unreadCount,
-                    unreadMentionCount: chat.unreadMentionCount,
-                    unreadReactionCount: chat.unreadReactionCount,
-                    upgradedGiftColors: chat.upgradedGiftColors,
-                    videoChat: chat.videoChat,
-                    viewAsTopics: chat.viewAsTopics
-                )
+                chats[i] = chats[i].withLastMessage(u.lastMessage, positions: u.positions)
             }
         default:
             break
@@ -118,30 +82,30 @@ final class TDManager: ObservableObject {
     // MARK: - Auth
 
     private func handleAuth(state: AuthorizationState) {
+        print("[TDManager] auth state: \(state)")
         switch state {
         case .authorizationStateWaitTdlibParameters:
             configure()
         case .authorizationStateWaitPhoneNumber:
-            DispatchQueue.main.async { self.authState = .waitPhoneNumber }
+            Task { @MainActor in self.authState = .waitPhoneNumber }
         case .authorizationStateWaitCode:
-            DispatchQueue.main.async { self.authState = .waitCode }
+            Task { @MainActor in self.authState = .waitCode }
         case .authorizationStateWaitPassword:
-            DispatchQueue.main.async { self.authState = .waitPassword }
+            Task { @MainActor in self.authState = .waitPassword }
         case .authorizationStateReady:
-            DispatchQueue.main.async { self.authState = .ready }
+            Task { @MainActor in self.authState = .ready }
             loadChats()
-        case .authorizationStateClosed:
-            DispatchQueue.main.async { self.authState = .idle }
+        case .authorizationStateClosed, .authorizationStateLoggingOut:
+            Task { @MainActor in self.authState = .idle }
         default:
             break
         }
     }
 
+    // MARK: - Public auth methods
+
     func sendPhone(_ phone: String) async throws {
-        try await client.setAuthenticationPhoneNumber(
-            phoneNumber: phone,
-            settings: nil
-        )
+        try await client.setAuthenticationPhoneNumber(phoneNumber: phone, settings: nil)
     }
 
     func sendCode(_ code: String) async throws {
@@ -150,6 +114,10 @@ final class TDManager: ObservableObject {
 
     func sendPassword(_ password: String) async throws {
         try await client.checkAuthenticationPassword(password: password)
+    }
+
+    func logOut() {
+        Task { _ = try? await client.logOut() }
     }
 
     // MARK: - Chats
@@ -212,16 +180,55 @@ final class TDManager: ObservableObject {
         )
         return result.messages ?? []
     }
+}
 
-    // MARK: - Helpers
+// MARK: - Chat helper
 
-    private func dbPath() -> String {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        return docs.appendingPathComponent("darkgram_db").path
-    }
-
-    private func filesPath() -> String {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        return docs.appendingPathComponent("darkgram_files").path
+private extension Chat {
+    func withLastMessage(_ lastMessage: Message?, positions: [ChatPosition]) -> Chat {
+        Chat(
+            accentColorId: accentColorId,
+            actionBar: actionBar,
+            availableReactions: availableReactions,
+            background: background,
+            backgroundCustomEmojiId: backgroundCustomEmojiId,
+            blockList: blockList,
+            businessBotManageBar: businessBotManageBar,
+            canBeDeletedForAllUsers: canBeDeletedForAllUsers,
+            canBeDeletedOnlyForSelf: canBeDeletedOnlyForSelf,
+            canBeReported: canBeReported,
+            chatLists: chatLists,
+            clientData: clientData,
+            defaultDisableNotification: defaultDisableNotification,
+            draftMessage: draftMessage,
+            emojiStatus: emojiStatus,
+            hasProtectedContent: hasProtectedContent,
+            hasScheduledMessages: hasScheduledMessages,
+            id: id,
+            isMarkedAsUnread: isMarkedAsUnread,
+            isTranslatable: isTranslatable,
+            lastMessage: lastMessage,
+            lastReadInboxMessageId: lastReadInboxMessageId,
+            lastReadOutboxMessageId: lastReadOutboxMessageId,
+            messageAutoDeleteTime: messageAutoDeleteTime,
+            messageSenderId: messageSenderId,
+            notificationSettings: notificationSettings,
+            pendingJoinRequests: pendingJoinRequests,
+            permissions: permissions,
+            photo: photo,
+            positions: positions,
+            profileAccentColorId: profileAccentColorId,
+            profileBackgroundCustomEmojiId: profileBackgroundCustomEmojiId,
+            replyMarkupMessageId: replyMarkupMessageId,
+            theme: theme,
+            title: title,
+            type: type,
+            unreadCount: unreadCount,
+            unreadMentionCount: unreadMentionCount,
+            unreadReactionCount: unreadReactionCount,
+            upgradedGiftColors: upgradedGiftColors,
+            videoChat: videoChat,
+            viewAsTopics: viewAsTopics
+        )
     }
 }
