@@ -1,5 +1,6 @@
 import Foundation
 import TDLibKit
+import UIKit
 import Combine
 
 enum AuthState: Equatable {
@@ -16,7 +17,8 @@ final class TDManager: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     private init() {
-        api = TdApi(client: TdClientImpl())
+        let client = TDLibClientManager.shared.createClient()
+        api = TdApi(client: client)
         configure()
         startUpdateLoop()
     }
@@ -26,19 +28,20 @@ final class TDManager: ObservableObject {
     private func configure() {
         Task {
             _ = try? await api.setTdlibParameters(
+                apiHash: TELEGRAM_API_HASH,
+                apiId: Int(TELEGRAM_API_ID),
+                applicationVersion: "1.0",
                 databaseDirectory: dbPath(),
                 databaseEncryptionKey: nil,
+                deviceModel: UIDevice.current.model,
                 filesDirectory: filesPath(),
-                useFileDatabase: true,
+                systemLanguageCode: Locale.current.language.languageCode?.identifier ?? "en",
+                systemVersion: UIDevice.current.systemVersion,
                 useChatInfoDatabase: true,
+                useFileDatabase: true,
                 useMessageDatabase: true,
                 useSecretChats: true,
-                apiId: TELEGRAM_API_ID,
-                apiHash: TELEGRAM_API_HASH,
-                systemLanguageCode: Locale.current.language.languageCode?.identifier ?? "en",
-                deviceModel: UIDevice.current.model,
-                systemVersion: UIDevice.current.systemVersion,
-                applicationVersion: "1.0"
+                useTestDc: false
             )
         }
     }
@@ -48,8 +51,7 @@ final class TDManager: ObservableObject {
     private func startUpdateLoop() {
         Task.detached(priority: .background) { [weak self] in
             guard let self else { return }
-            while true {
-                guard let update = try? await self.api.getUpdate() else { continue }
+            for await update in self.api.updates {
                 await self.handle(update: update)
             }
         }
@@ -66,41 +68,50 @@ final class TDManager: ObservableObject {
             }
         case .updateChatLastMessage(let u):
             if let i = chats.firstIndex(where: { $0.id == u.chatId }) {
+                var chat = chats[i]
                 chats[i] = Chat(
-                    id: chats[i].id,
-                    type: chats[i].type,
-                    title: chats[i].title,
-                    photo: chats[i].photo,
+                    accentColorId: chat.accentColorId,
+                    actionBar: chat.actionBar,
+                    availableReactions: chat.availableReactions,
+                    background: chat.background,
+                    backgroundCustomEmojiId: chat.backgroundCustomEmojiId,
+                    blockList: chat.blockList,
+                    businessBotManageBar: chat.businessBotManageBar,
+                    canBeDeletedForAllUsers: chat.canBeDeletedForAllUsers,
+                    canBeDeletedOnlyForSelf: chat.canBeDeletedOnlyForSelf,
+                    canBeReported: chat.canBeReported,
+                    chatLists: chat.chatLists,
+                    clientData: chat.clientData,
+                    defaultDisableNotification: chat.defaultDisableNotification,
+                    draftMessage: chat.draftMessage,
+                    emojiStatus: chat.emojiStatus,
+                    hasProtectedContent: chat.hasProtectedContent,
+                    hasScheduledMessages: chat.hasScheduledMessages,
+                    id: chat.id,
+                    isMarkedAsUnread: chat.isMarkedAsUnread,
+                    isTranslatable: chat.isTranslatable,
                     lastMessage: u.lastMessage,
+                    lastReadInboxMessageId: chat.lastReadInboxMessageId,
+                    lastReadOutboxMessageId: chat.lastReadOutboxMessageId,
+                    messageAutoDeleteTime: chat.messageAutoDeleteTime,
+                    messageSenderId: chat.messageSenderId,
+                    notificationSettings: chat.notificationSettings,
+                    pendingJoinRequests: chat.pendingJoinRequests,
+                    permissions: chat.permissions,
+                    photo: chat.photo,
                     positions: u.positions,
-                    messageSenderId: chats[i].messageSenderId,
-                    blockList: chats[i].blockList,
-                    hasProtectedContent: chats[i].hasProtectedContent,
-                    isTranslatable: chats[i].isTranslatable,
-                    isMarkedAsUnread: chats[i].isMarkedAsUnread,
-                    viewAsTopics: chats[i].viewAsTopics,
-                    hasScheduledMessages: chats[i].hasScheduledMessages,
-                    canBeDeletedOnlyForSelf: chats[i].canBeDeletedOnlyForSelf,
-                    canBeDeletedForAllUsers: chats[i].canBeDeletedForAllUsers,
-                    canBeReported: chats[i].canBeReported,
-                    defaultDisableNotification: chats[i].defaultDisableNotification,
-                    unreadCount: chats[i].unreadCount,
-                    lastReadInboxMessageId: chats[i].lastReadInboxMessageId,
-                    lastReadOutboxMessageId: chats[i].lastReadOutboxMessageId,
-                    unreadMentionCount: chats[i].unreadMentionCount,
-                    unreadReactionCount: chats[i].unreadReactionCount,
-                    notificationSettings: chats[i].notificationSettings,
-                    availableReactions: chats[i].availableReactions,
-                    messageAutoDeleteTime: chats[i].messageAutoDeleteTime,
-                    emojiStatus: chats[i].emojiStatus,
-                    background: chats[i].background,
-                    themeName: chats[i].themeName,
-                    actionBar: chats[i].actionBar,
-                    videoChat: chats[i].videoChat,
-                    pendingJoinRequests: chats[i].pendingJoinRequests,
-                    replyMarkupMessageId: chats[i].replyMarkupMessageId,
-                    draftMessage: chats[i].draftMessage,
-                    clientData: chats[i].clientData
+                    profileAccentColorId: chat.profileAccentColorId,
+                    profileBackgroundCustomEmojiId: chat.profileBackgroundCustomEmojiId,
+                    replyMarkupMessageId: chat.replyMarkupMessageId,
+                    theme: chat.theme,
+                    title: chat.title,
+                    type: chat.type,
+                    unreadCount: chat.unreadCount,
+                    unreadMentionCount: chat.unreadMentionCount,
+                    unreadReactionCount: chat.unreadReactionCount,
+                    upgradedGiftColors: chat.upgradedGiftColors,
+                    videoChat: chat.videoChat,
+                    viewAsTopics: chat.viewAsTopics
                 )
             }
         default:
@@ -153,15 +164,14 @@ final class TDManager: ObservableObject {
 
     // MARK: - Ghost Mode
 
-    /// Помечает чат прочитанным только если Ghost Mode выключен
     func markRead(chatId: Int64, messageId: Int64) {
         guard !TweakSettings.shared.ghostMode else { return }
         Task {
             _ = try? await api.viewMessages(
                 chatId: chatId,
+                forceRead: false,
                 messageIds: [messageId],
-                source: nil,
-                forceRead: false
+                source: nil
             )
         }
     }
@@ -171,24 +181,24 @@ final class TDManager: ObservableObject {
     func send(text: String, chatId: Int64, replyToId: Int64? = nil) async throws {
         let content = InputMessageContent.inputMessageText(
             InputMessageText(
-                text: FormattedText(text: text, entities: []),
+                clearDraft: true,
                 linkPreviewOptions: nil,
-                clearDraft: true
+                text: FormattedText(entities: [], text: text)
             )
         )
         var replyTo: InputMessageReplyTo? = nil
         if let rid = replyToId {
             replyTo = .inputMessageReplyToMessage(
-                InputMessageReplyToMessage(chatId: chatId, messageId: rid, quote: nil)
+                InputMessageReplyToMessage(checklistTaskId: nil, messageId: Int(rid), quote: nil)
             )
         }
         _ = try await api.sendMessage(
             chatId: chatId,
-            messageThreadId: 0,
-            replyTo: replyTo,
+            inputMessageContent: content,
             options: nil,
             replyMarkup: nil,
-            inputMessageContent: content
+            replyTo: replyTo,
+            topicId: nil
         )
     }
 
@@ -198,8 +208,8 @@ final class TDManager: ObservableObject {
         let result = try await api.getChatHistory(
             chatId: chatId,
             fromMessageId: fromMessageId,
-            offset: 0,
             limit: limit,
+            offset: 0,
             onlyLocal: false
         )
         return result.messages ?? []
