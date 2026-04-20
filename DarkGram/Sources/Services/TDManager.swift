@@ -13,19 +13,19 @@ final class TDManager: ObservableObject {
     @Published var authState: AuthState = .idle
     @Published var chats: [Chat] = []
 
-    private var api: TdApi!
+    private var client: TDLibClient!
     private let manager = TDLibClientManager()
     private var cancellables = Set<AnyCancellable>()
 
     private init() {
-        var tdClient: TDLibClient!
-        tdClient = manager.createClient(updateHandler: { data, _ in
-            guard let update = try? tdClient.decoder.decode(Update.self, from: data) else { return }
-            Task { @MainActor in
-                TDManager.shared.handle(update: update)
-            }
+        client = manager.createClient(updateHandler: { [weak self] data, tdClient in
+            do {
+                let update = try tdClient.decoder.decode(Update.self, from: data)
+                Task { @MainActor [weak self] in
+                    self?.handle(update: update)
+                }
+            } catch {}
         })
-        api = TdApi(client: tdClient)
         configure()
     }
 
@@ -33,7 +33,7 @@ final class TDManager: ObservableObject {
 
     private func configure() {
         Task {
-            _ = try? await api.setTdlibParameters(
+            _ = try? await client.setTdlibParameters(
                 apiHash: TELEGRAM_API_HASH,
                 apiId: Int(TELEGRAM_API_ID),
                 applicationVersion: "1.0",
@@ -137,25 +137,25 @@ final class TDManager: ObservableObject {
     }
 
     func sendPhone(_ phone: String) async throws {
-        try await api.setAuthenticationPhoneNumber(
+        try await client.setAuthenticationPhoneNumber(
             phoneNumber: phone,
             settings: nil
         )
     }
 
     func sendCode(_ code: String) async throws {
-        try await api.checkAuthenticationCode(code: code)
+        try await client.checkAuthenticationCode(code: code)
     }
 
     func sendPassword(_ password: String) async throws {
-        try await api.checkAuthenticationPassword(password: password)
+        try await client.checkAuthenticationPassword(password: password)
     }
 
     // MARK: - Chats
 
     func loadChats() {
         Task {
-            _ = try? await api.loadChats(chatList: .chatListMain, limit: 100)
+            _ = try? await client.loadChats(chatList: .chatListMain, limit: 100)
         }
     }
 
@@ -164,7 +164,7 @@ final class TDManager: ObservableObject {
     func markRead(chatId: Int64, messageId: Int64) {
         guard !TweakSettings.shared.ghostMode else { return }
         Task {
-            _ = try? await api.viewMessages(
+            _ = try? await client.viewMessages(
                 chatId: chatId,
                 forceRead: false,
                 messageIds: [messageId],
@@ -189,7 +189,7 @@ final class TDManager: ObservableObject {
                 InputMessageReplyToMessage(checklistTaskId: 0, messageId: rid, quote: nil)
             )
         }
-        _ = try await api.sendMessage(
+        _ = try await client.sendMessage(
             chatId: chatId,
             inputMessageContent: content,
             options: nil,
@@ -202,7 +202,7 @@ final class TDManager: ObservableObject {
     // MARK: - Messages
 
     func loadMessages(chatId: Int64, fromMessageId: Int64 = 0, limit: Int = 50) async throws -> [Message] {
-        let result = try await api.getChatHistory(
+        let result = try await client.getChatHistory(
             chatId: chatId,
             fromMessageId: fromMessageId,
             limit: limit,
